@@ -3,11 +3,13 @@ import numpy as np
 from imgbeddings import imgbeddings
 from PIL import Image
 import psycopg2
+import sys
 import os
 
 db = psycopg2.connect("host='localhost' dbname='testdb' user='nick' password='qwerty'")
 
-file_name = 'nickface.jpg'
+file_name = sys.argv[1] #take in file name to recognize
+
 img = Image.open(file_name)
 
 ibed = imgbeddings()
