@@ -2,26 +2,36 @@ from flask import Flask, render_template, request, redirect, url_for, session, R
 
 app = Flask(__name__)
 
+facereg_status = "disable"
+patrol_status = "disable"
+
+facereg_color = "red"
+patrol_color = "red"
+
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('index.html', facereg=facereg_status, patrol=patrol_status, facereg_color=facereg_color, patrol_color=patrol_color)
 
 
 # ToDO: Integrate with SPOTyGuard Backend
 @app.route('/facereg-<status>')
 def facereg(status):
+    global facereg_status, facereg_color
+    facereg_status = status
     if status == "enable":
-        print("waow")
+        facereg_color = "green"
     elif status == "disable":
-        print("waow 2")
+        facereg_color = "red"
     return redirect("/")
 # ToDO: Integrate with SPOTyGuard Backend
 @app.route("/patrol-<status>")
 def patrol(status):
+    global patrol_status, patrol_color
+    patrol_status = status
     if status == "enable":
-        print("wowowo")
+        patrol_color = "green"
     elif status == "disable":
-        print("wowowo 2")
+        patrol_color = "red"
     return redirect("/")
 
 
