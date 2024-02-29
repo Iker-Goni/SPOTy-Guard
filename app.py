@@ -8,12 +8,18 @@ patrol_status = "disable"
 facereg_color = "red"
 patrol_color = "red"
 
+import argparse
+import bosdyn.client.util
+from bosdyn.client import create_standard_sdk
+from bosdyn.client.robot_command import RobotCommandBuilder, RobotCommandClient
+# TODO: figure out rest of imports
+
 @app.route('/')
 def home():
     return render_template('index.html', facereg=facereg_status, patrol=patrol_status, facereg_color=facereg_color, patrol_color=patrol_color)
 
 
-# ToDO: Integrate with SPOTyGuard Backend
+# TODO: Integrate with SPOTyGuard Backend
 @app.route('/facereg-<status>')
 def facereg(status):
     global facereg_status, facereg_color
@@ -23,7 +29,7 @@ def facereg(status):
     elif status == "disable":
         facereg_color = "red"
     return redirect("/")
-# ToDO: Integrate with SPOTyGuard Backend
+# TDO: Integrate with SPOTyGuard Backend
 @app.route("/patrol-<status>")
 def patrol(status):
     global patrol_status, patrol_color
@@ -34,7 +40,23 @@ def patrol(status):
         patrol_color = "red"
     return redirect("/")
 
-
+@app.route("/gripper-<status>")
+def gripper(status):
+    global robot
+    if status == "open":
+        robot._start_robot_command('open_gripper', RobotCommandBuilder.claw_gripper_open_command())
+    elif status == "close":
+        robot._start_robot_command('close_gripper', RobotCommandBuilder.claw_gripper_close_command())
 
 if __name__ == '__main__':
-    app.run(debug=true)
+    global robot, robot_command_client
+    # parse arguments
+    parser = argparse.ArgumentParser()
+    bosdyn.client.util.add_base_arguments(parser)
+    options = parser.parse_args()
+    # create robot object
+    sdk = create_standard_sdk('Spot Web Server')
+    robot = sdk.create_robot(options.hostname)
+    robot_command_client = robot.ensure_client(RobotCommandClient.default_service_name)
+    # run flask server
+    app.run(debug=True)
