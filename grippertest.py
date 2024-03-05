@@ -47,8 +47,11 @@ def gripper_test(config):
         gripper_command = RobotCommandBuilder.claw_gripper_open_fraction_command(0.0)
 
         cmd_id = command_client.robot_command(gripper_command)
+        robot.logger.info('closing gripper')
 
         time.sleep(3)
+
+        robot.logger.info('done')
 
         robot.power_off(cut_immediately=False, timeout_sec=20)
 
