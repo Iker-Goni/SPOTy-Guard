@@ -15,19 +15,25 @@ from bosdyn.client.robot_state import RobotStateClient
 
 class SpotController:
     def __init__(self, hostname="192.168.80.3"):
-        self.hostname = hostname
-        bosdyn.client.util.setup_logging(config.verbose)
+        self.hostname = hostname 
         self.sdk = bosdyn.client.create_standard_sdk('SpotControllerClient')
-        self.robot = sdk.create_robot()
-        bosdyn.client.util.authenticate(robot)
+        self.robot = self.sdk.create_robot(self.hostname)
+        bosdyn.client.util.authenticate(self.robot)
         self.robot.time_sync.wait_for_sync()
+        self.robot_state_client = self.robot.ensure_client(RobotStateClient.default_service_name)
+        self.lease_client = self.robot.ensure_client(bosdyn.client.lease.LeaseClient.default_service_name)
 
-    def setGripperState(openState):
+
+
+    def setGripperState(self, openState):
+        print("to be implemented by iker")
         # true = open
         # false = closed
-    def enablePatrol():
+    def enablePatrol(self):
+        print("to be implemented by iker")
         # enable and disable can be the same function, just separating them rn to mirror what the website looks like
         # do stuff
-    def disablePatrol():
+    def disablePatrol(self):
+        print("to be implemented by iker")
         # do other stuff
 
