@@ -67,6 +67,12 @@ def unestop():
     rc.unestop()
     return redirect("/")
 
+@app.route("/testnotifs")
+def notify():
+    print("do something lol")
+    return redirect("/")
+    
+
 if __name__ == '__main__':
     rc = SpotController.SpotController()
     # run flask server

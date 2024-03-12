@@ -62,15 +62,15 @@ class SpotController:
         self.robot_state_client = self.robot.ensure_client(RobotStateClient.default_service_name)
 
     def setGripperState(self, openState):
-        print("to be implemented by iker")
+        print("things")
         # true = open
         # false = closed
     def enablePatrol(self):
-        print("to be implemented by iker")
+        print("things")
         # enable and disable can be the same function, just separating them rn to mirror what the website looks like
         # do stuff
     def disablePatrol(self):
-        print("to be implemented by iker")
+        print("things")
         # do other stuff
     def estop(self):
         print("Estopping...")
