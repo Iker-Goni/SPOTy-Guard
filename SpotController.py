@@ -46,6 +46,15 @@ class SpotController:
     def unestop(self):
         print("Removing estop...")
         self.estop_nogui.allow()
-    def getestopstatus(self):
+    def get_estop_status(self):
         states = self.robot_state_client.get_robot_state().estop_states
-        print(states)
+        for state in states:
+            if state.name != 'software_estop':
+                continue
+            state_str = state.State.Name(state.state)
+            if state_str == 'STATE_ESTOPPED':
+                return 'STOPPED'
+            elif state_str == 'STATE_UNKNOWN':
+                return 'ERROR'
+            elif state_str == 'STATE_NOT_ESTOPPED':
+                return 'NOT_STOPPED'

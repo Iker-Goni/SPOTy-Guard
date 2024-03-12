@@ -10,9 +10,18 @@ patrol_color = "red"
 
 rc = SpotController.SpotController()
 
+estop_status = rc.get_estop_status()
+estop_color = "red"
+if(estop_status == 'STOPPED'):
+    estop_color = "red"
+elif(estop_status == 'NOT_STOPPED'):
+    estop_color = "green"
+elif(estop_status == 'ERROR'):
+    estop_color = "grey"
+
 @app.route('/')
 def home():
-    return render_template('index.html', facereg=facereg_status, patrol=patrol_status, facereg_color=facereg_color, patrol_color=patrol_color)
+    return render_template('index.html', facereg=facereg_status, patrol=patrol_status, facereg_color=facereg_color, patrol_color=patrol_color, estop=estop_status, estop_color=estop_color)
 
 
 # TODO: Integrate with SPOTyGuard Backend
@@ -72,9 +81,17 @@ def notify():
     print("do something lol")
     return redirect("/")
 
-@app.route("/getestopstate")
-def getestopstatus():
-    rc.getestopstatus()
+@app.route("/get-estop-status")
+def get_estop_status():
+    global estop_status, estop_color
+    estop_status = rc.get_estop_status()
+    print(estop_status)
+    if(estop_status == 'STOPPED'):
+        estop_color = "red"
+    elif(estop_status == 'NOT_STOPPED'):
+        estop_color = "green"
+    elif(estop_status == 'ERROR'):
+        estop_color = "grey"
     return redirect("/")
 
 if __name__ == '__main__': 
