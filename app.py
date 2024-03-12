@@ -70,11 +70,11 @@ def animationTest(num):
 @app.route("/estop")
 def estop():
     rc.estop()
-    return redirect("/")
+    return get_estop_status()
 @app.route("/unestop")
 def unestop():
     rc.unestop()
-    return redirect("/")
+    return get_estop_status()
 
 @app.route("/testnotifs")
 def notify():
