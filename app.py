@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, Response, jsonify
-
+import SpotController
 app = Flask(__name__)
 
 facereg_status = "disable"
@@ -7,6 +7,8 @@ patrol_status = "disable"
 
 facereg_color = "red"
 patrol_color = "red"
+
+rc = None
 
 @app.route('/')
 def home():
@@ -56,15 +58,16 @@ def animationTest(num):
         print("wewe")
     return redirect("/")
 
+@app.route("/estop")
+def estop():
+    rc.estop()
+    return redirect("/")
+@app.route("/unestop")
+def unestop():
+    rc.unestop()
+    return redirect("/")
+
 if __name__ == '__main__':
-    #global robot, robot_command_client
-    # parse arguments
-    #parser = argparse.ArgumentParser()
-    #bosdyn.client.util.add_base_arguments(parser)
-    #options = parser.parse_args()
-    # create robot object
-    #sdk = create_standard_sdk('Spot Web Server')
-    #robot = sdk.create_robot(options.hostname)
-    #robot_command_client = robot.ensure_client(RobotCommandClient.default_service_name)
+    rc = SpotController.SpotController()
     # run flask server
     app.run(debug=True)
