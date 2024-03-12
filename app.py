@@ -43,6 +43,18 @@ def gripper(status):
     elif status == "close":
         print("do nothing")
         #robot._start_robot_command('close_gripper', RobotCommandBuilder.claw_gripper_close_command())
+    return redirect("/")
+
+@app.route("/anim<num>")
+def animationTest(num):
+    num = int(num)
+    if num == 1:
+        print("wawa")
+    elif num == 2:
+        print("wowo")
+    elif num == 3:
+        print("wewe")
+    return redirect("/")
 
 if __name__ == '__main__':
     #global robot, robot_command_client
