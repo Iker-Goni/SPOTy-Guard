@@ -8,7 +8,7 @@ patrol_status = "disable"
 facereg_color = "red"
 patrol_color = "red"
 
-rc = None
+rc = SpotController.SpotController()
 
 @app.route('/')
 def home():
@@ -71,9 +71,12 @@ def unestop():
 def notify():
     print("do something lol")
     return redirect("/")
-    
 
-if __name__ == '__main__':
-    rc = SpotController.SpotController()
+@app.route("/getestopstate")
+def getestopstatus():
+    rc.getestopstatus()
+    return redirect("/")
+
+if __name__ == '__main__': 
     # run flask server
     app.run(debug=True)
