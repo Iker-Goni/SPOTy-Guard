@@ -104,8 +104,11 @@ class SpotController:
             image_saved_path = image_saved_path.replace(
                 '/', ''
             )
-            cv2.imwrite(image_saved_path + '.png', img)
-        print ("Saved image as " + image_saved_path + '.png.')
+            #add a random number to the name of the image to prevent duplicates
+            image_path = image_saved_path + str(np.random.randint(0,10000)) + '.png'
+            cv2.imwrite(image_path, img)
+            
+        print ("Saved image as " + image_path + '.png.')
 
-        
+
 
