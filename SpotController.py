@@ -2,6 +2,10 @@ import argparse
 import sys
 import time
 
+import cv2
+import numpy as np
+from scipy import ndimage
+
 import bosdyn.api.gripper_camera_param_pb2
 import bosdyn.client
 import bosdyn.client.lease
@@ -11,6 +15,8 @@ from bosdyn.client.robot_command import (RobotCommandBuilder, RobotCommandClient
 import bosdyn.client.util
 from bosdyn.client.estop import EstopClient, EstopEndpoint, EstopKeepAlive
 from bosdyn.client.robot_state import RobotStateClient
+from bosdyn.client.image import ImageClient, build_image_request
+from bosdyn.api import image_pb2
 
 
 class EstopNoGui():
@@ -82,3 +88,24 @@ class SpotController:
         estop_nogui.stop()
     def unestop(self):
         print("Removing estop...")
+    def scanFace(self):
+        print ("Scanning face...")
+        #TODO: put the arm up, instruct user to stand infront of spot
+        image_client = self.robot.ensure_client(ImageClient.default_service_name)
+        image_request = [
+            build_image_request(image_source_name='hand_color_image', quality_percent=100)
+        ]
+        image_responses = image_client.get_image(image_request)
+        for image in image_responses:
+            num_bytes = 1
+            img = np.frombuffer(image.shot.image.data, dtype=np.uint8)
+            img = cv2.imdecode(img, -1)
+            image_saved_path = image.source.name
+            image_saved_path = image_saved_path.replace(
+                '/', ''
+            )
+            cv2.imwrite(image_saved_path + '.png', img)
+        print ("Saved image as " + image_saved_path + '.png.')
+
+        
+
