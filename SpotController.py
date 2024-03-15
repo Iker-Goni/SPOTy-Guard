@@ -1,6 +1,7 @@
 import argparse
 import sys
 import time
+import facerecog
 
 import cv2
 import numpy as np
@@ -108,7 +109,10 @@ class SpotController:
             image_path = image_saved_path + str(np.random.randint(0,10000)) + '.png'
             cv2.imwrite(image_path, img)
             
-        print ("Saved image as " + image_path + '.png.')
+        print ("Saved image as " + image_path)
+        recognizer = facerecog.FaceRecognizer()
+        recognizer.IdentifyFaces(image_path)
+        #TODO: parse the image, look for faces.
 
-
-
+controller = SpotController()
+controller.scanFace()
