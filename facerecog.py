@@ -6,10 +6,10 @@ import pathlib
 class FaceRecognizer():
     
     def __init__(self):
-        self.face_cascade_file = '/content/haarcascade_frontalface_default.xml'
+        self.face_cascade_file = 'haarcascade_frontalface_default.xml'
         self.face_cascade = cv2.CascadeClassifier(self.face_cascade_file)
         # create directory for face images if it doesn't exist
-        pathlib.Path('/content/stored-faces').mkdir(parents=True, exist_ok=True)
+        pathlib.Path('stored-faces').mkdir(parents=True, exist_ok=True)
     
     def IdentifyFaces(self, file_name):
         print("Finding faces in " + file_name)
@@ -21,8 +21,9 @@ class FaceRecognizer():
             
             i += 1
             cropped_image = img[y : y + h, x: x + w]
-            target_file_name = '/content/stored-faces' + file_name +'_face' + str(i) + '.png'
+            target_file_name = file_name +'_face' + str(i) + '.png'
             cv2.imwrite(target_file_name, cropped_image)
+            print('writing ' + target_file_name)
 
         if i == 0:
             print("didn't find any faces in image " + file_name)
