@@ -90,6 +90,7 @@ class SpotController:
     def unestop(self):
         print("Removing estop...")
     def scanFace(self):
+        "scans a user's face and adds it to the database."
         print ("Scanning face...")
         #TODO: put the arm up, instruct user to stand infront of spot
         image_client = self.robot.ensure_client(ImageClient.default_service_name)
@@ -112,7 +113,7 @@ class SpotController:
         print ("Saved image as " + image_path)
         recognizer = facerecog.FaceRecognizer()
         recognizer.IdentifyFaces(image_path)
-        #TODO: parse the image, look for faces.
+        recognizer.SaveNewFaces()
 
 controller = SpotController()
 controller.scanFace()
