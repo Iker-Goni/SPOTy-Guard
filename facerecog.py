@@ -2,6 +2,12 @@ import cv2
 import sys
 import os
 import pathlib
+import psycopg2
+import numpy as np
+
+from imgbeddings import imgbeddings
+from PIL import Image
+
 
 class FaceRecognizer():
     
@@ -11,6 +17,8 @@ class FaceRecognizer():
         # create directory for face images if it doesn't exist
         pathlib.Path('stored-faces').mkdir(parents=True, exist_ok=True)
     
+    #TODO dump faces to a folder. for some reason i was getting a write permission error.
+    # this should dump faces to a "new faces" folder
     def IdentifyFaces(self, file_name):
         print("Finding faces in " + file_name)
         img = cv2.imread(file_name, 0)
@@ -29,3 +37,25 @@ class FaceRecognizer():
             print("didn't find any faces in image " + file_name)
         else:
             print("found " + str(i) + ' faces in the image.')
+
+    def SaveFaces():
+        print("Saving all faces in stored-faces to database...")
+        for filename in os.listdir("stored-faces"):
+            img  = Image.open("stored-faces/" + filename)
+            ibed = imgbeddings()
+            embedding = ibed.to_embeddings(img)
+            FaceRecognizer._WriteToDatabase(filename, embedding)
+           
+
+    def SaveNewFaces():
+        print("Saving all faces in new-faces to database...")
+        for filename in os.listdir("new-faces"):
+            img  = Image.open("new-faces/" + filename)
+            ibed = imgbeddings()
+            embedding = ibed.to_embeddings(img)
+            FaceRecognizer._WriteToDatabase(filename, embedding)
+            
+    
+    def _WriteToDatabase(filename, data):
+        print("WARN: database stuff not yet implemented, #BlameNick")
+        #TODO implement
