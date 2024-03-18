@@ -9,7 +9,7 @@ intents.messages = True  # You may need to adjust these based on your bot's func
 
 # Initialize the Discord client with intents
 client = discord.Client(intents=intents)
-TOKEN = 'MTIxNzE5MDQ1MDA3OTk4OTgwMQ.Ga2XtU.35T51Vl_UqLsTXvxHv-fps4sLXLBP67Qs4wna0'
+# Token goes here
 
 # Define your boolean condition and the message you want to send
 boolean_condition = True
