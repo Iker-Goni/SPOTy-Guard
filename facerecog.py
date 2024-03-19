@@ -14,6 +14,7 @@ class FaceRecognizer():
     def __init__(self):
         self.face_cascade_file = 'haarcascade_frontalface_default.xml'
         self.face_cascade = cv2.CascadeClassifier(self.face_cascade_file)
+        self.db = psycopg2.connect("host='localhost' dbname='testdb' user='nick' password='qwerty'")
         # create directory for face images if it doesn't exist
         pathlib.Path('stored-faces').mkdir(parents=True, exist_ok=True)
     
@@ -42,8 +43,7 @@ class FaceRecognizer():
         print("Saving all faces in stored-faces to database...")
         for filename in os.listdir("stored-faces"):
             img  = Image.open("stored-faces/" + filename)
-            ibed = imgbeddings()
-            embedding = ibed.to_embeddings(img)
+            embedding = FaceRecognizer._GenerateEmbedding(img)
             FaceRecognizer._WriteToDatabase(filename, embedding)
            
 
@@ -51,11 +51,21 @@ class FaceRecognizer():
         print("Saving all faces in new-faces to database...")
         for filename in os.listdir("new-faces"):
             img  = Image.open("new-faces/" + filename)
-            ibed = imgbeddings()
-            embedding = ibed.to_embeddings(img)
+            embedding = FaceRecognizer._GenerateEmbedding(img)
             FaceRecognizer._WriteToDatabase(filename, embedding)
             
     
-    def _WriteToDatabase(filename, data):
-        print("WARN: database stuff not yet implemented, #BlameNick")
-        #TODO implement
+    def _WriteToDatabase(self, filename, data):
+        cursor = self.db.cursor()
+        cursor.execute("INSERT INTO pictures values (%s,%s)", (filename, data[0].tolist()))
+
+    def RecognizeFaces(self, embedding):
+        cursor = self.db.cursor()
+        string_rep = "[" + ",".join(str(x) for x in embedding[0].tolist()) + "]"
+        cursor.execute("SELECT * FROM pictures ORDER BY embedding <-> %s LIMIT 5", (string_rep))
+        rows = cursor.fetchall()
+        for row in rows:
+            print(row)
+    def _GenerateEmbedding(self, image):
+        ibed = imgbeddings()
+        return ibed.to_embeddings(image)
