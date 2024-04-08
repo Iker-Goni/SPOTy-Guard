@@ -4,6 +4,7 @@ import os
 import pathlib
 import psycopg2
 import numpy as np
+import shutil
 
 from imgbeddings import imgbeddings
 from PIL import Image
@@ -42,17 +43,18 @@ class FaceRecognizer():
         print("Saving all faces in stored-faces to database...")
         for filename in os.listdir("stored-faces"):
             img  = Image.open("stored-faces/" + filename)
-            embedding = FaceRecognizer._GenerateEmbedding(img)
-            FaceRecognizer._WriteToDatabase(filename, embedding)
+            embedding = FaceRecognizer._GenerateEmbedding(self, img)
+            FaceRecognizer._WriteToDatabase(self, filename, embedding)
            
 
     def SaveNewFaces(self):
         print("Saving all faces in new-faces to database...")
         for filename in os.listdir("new-faces"):
             img  = Image.open("new-faces/" + filename)
-            embedding = FaceRecognizer._GenerateEmbedding(img)
-            FaceRecognizer._WriteToDatabase(filename, embedding)
-            
+            embedding = FaceRecognizer._GenerateEmbedding(self, img)
+            FaceRecognizer._WriteToDatabase(self, filename, embedding)
+        move_files('new-faces', 'stored-faces')
+        
     
     def _WriteToDatabase(self, filename, data):
         cursor = self.db.cursor()
@@ -68,3 +70,16 @@ class FaceRecognizer():
     def _GenerateEmbedding(self, image):
         ibed = imgbeddings()
         return ibed.to_embeddings(image)
+
+def move_files(src_folder, dest_folder):
+    # Get the list of files in the source folder
+    files = os.listdir(src_folder)
+    
+    # Iterate over each file and move it to the destination folder
+    for file in files:
+        # Construct the full path of the source file
+        src_file = os.path.join(src_folder, file)
+        # Construct the full path of the destination file
+        dest_file = os.path.join(dest_folder, file)
+        # Move the file to the destination folder
+        shutil.move(src_file, dest_file)
