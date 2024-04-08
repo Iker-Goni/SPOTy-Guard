@@ -18,8 +18,7 @@ class FaceRecognizer():
         # create directory for face images if it doesn't exist
         pathlib.Path('stored-faces').mkdir(parents=True, exist_ok=True)
     
-    #TODO dump faces to a folder. for some reason i was getting a write permission error.
-    # this should dump faces to a "new faces" folder
+
     def IdentifyFaces(self, file_name):
         print("Finding faces in " + file_name)
         img = cv2.imread(file_name, 0)
@@ -30,7 +29,7 @@ class FaceRecognizer():
             
             i += 1
             cropped_image = img[y : y + h, x: x + w]
-            target_file_name = file_name +'_face' + str(i) + '.png'
+            target_file_name = 'new-faces/' + file_name +'_face' + str(i) + '.png'
             cv2.imwrite(target_file_name, cropped_image)
             print('writing ' + target_file_name)
 
@@ -39,7 +38,7 @@ class FaceRecognizer():
         else:
             print("found " + str(i) + ' faces in the image.')
 
-    def SaveFaces():
+    def SaveFaces(self):
         print("Saving all faces in stored-faces to database...")
         for filename in os.listdir("stored-faces"):
             img  = Image.open("stored-faces/" + filename)
@@ -47,7 +46,7 @@ class FaceRecognizer():
             FaceRecognizer._WriteToDatabase(filename, embedding)
            
 
-    def SaveNewFaces():
+    def SaveNewFaces(self):
         print("Saving all faces in new-faces to database...")
         for filename in os.listdir("new-faces"):
             img  = Image.open("new-faces/" + filename)
