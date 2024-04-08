@@ -90,7 +90,7 @@ class SpotController:
         estop_nogui.stop()
     def unestop(self):
         print("Removing estop...")
-    def scanFace(self):
+    def scanNewFace(self):
         "scans a user's face and adds it to the database."
         print ("Scanning face...")
         #TODO: put the arm up, instruct user to stand infront of spot
