@@ -1,0 +1,11 @@
+# Spot
+bosdyn-client
+bosdyn-mission
+bosdyn-choreography-client
+# Web app
+flask
+# Facial detection
+opencv-python
+psycopg2
+imgbeddings
+torch
