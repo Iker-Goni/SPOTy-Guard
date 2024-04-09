@@ -20,6 +20,7 @@ from bosdyn.client.image import ImageClient, build_image_request
 from bosdyn.api import image_pb2
 from bosdyn.api import robot_command_pb2
 
+from playsound import playsound
 
 class EstopNoGui():
     """Provides a software estop without a GUI.
@@ -90,6 +91,8 @@ class SpotController:
         estop_nogui.stop()
     def unestop(self):
         print("Removing estop...")
+    def bark(self):
+        playsound("sounds/bark.mp3")
     def scanNewFace(self):
         "scans a user's face and adds it to the database."
         print ("Scanning face...")

@@ -8,7 +8,8 @@ patrol_status = "disable"
 # facereg_color = "red"
 patrol_color = "red"
 
-rc = None
+rc = SpotController.SpotController()
+
 
 @app.route('/')
 def home():
@@ -27,6 +28,7 @@ def home():
 #         facereg_color = "red"
 #     return redirect("/")
 # TDO: Integrate with SPOTyGuard Backend
+
 @app.route("/patrol-<status>")
 def patrol(status):
     global patrol_status, patrol_color
@@ -62,11 +64,15 @@ def notify():
     print("do something lol")
     return redirect("/")
 
+@app.route("/testbark")
+def testbark():
+    rc.bark()
+    return redirect("/")
+
 @app.route("/addface")
 def addface():
     rc.scanNewFace()
     return redirect("/")
 if __name__ == '__main__':
-    rc = SpotController.SpotController()
     # run flask server
     app.run(debug=True)

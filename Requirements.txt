@@ -9,3 +9,6 @@ opencv-python
 psycopg2
 imgbeddings
 torch
+numpy
+# Audio
+playsound
