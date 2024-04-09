@@ -68,6 +68,7 @@ class SpotController:
         self.lease_client = self.robot.ensure_client(bosdyn.client.lease.LeaseClient.default_service_name)
         self.robot.time_sync.wait_for_sync()
         self.robot_state_client = self.robot.ensure_client(RobotStateClient.default_service_name)
+        self.recognizer = facerecog.FaceRecognizer()
 
     def setGripperState(self, openState):
         print("things")
@@ -90,6 +91,12 @@ class SpotController:
         estop_nogui.stop()
     def unestop(self):
         print("Removing estop...")
+    def flashLightOn(self):
+        #TODO: finish
+        print("things")
+        arm = self.robot_state_client.get_robot_state().arm_states[0]
+        flashlight = arm.flashlight
+        flashlight_command = RobotCommandBuilder.synchro_command(robot_command_pb2.ArmFlashlightCommand.Request.ON)
     def scanNewFace(self):
         "scans a user's face and adds it to the database."
         print ("Scanning face...")
@@ -113,7 +120,50 @@ class SpotController:
             cv2.imwrite(image_path, img)
             
         print ("Saved image as " + image_path)
-        recognizer = facerecog.FaceRecognizer()
-        recognizer.IdentifyFaces(image_path)
-        recognizer.SaveNewFaces()
+        self.recognizer.IdentifyFaces(image_path)
+        self.recognizer.SaveNewFaces()
+    def patrolRecognize(self):
+        "Takes an image with SPOT's hand cam, sees if it contains faces. If it does, we try to match them to known faces in the database."
+        print ("Taking patrol image...")
+        #TODO: have spot be swiveling the arm back and forth?
+        image_client = self.robot.ensure_client(ImageClient.default_service_name)
+        image_request = [
+            build_image_request(image_source_name='hand_color_image', quality_percent=100)
+        ]
+        image_responses = image_client.get_image(image_request)
+        for image in image_responses:
+            num_bytes = 1
+            img = np.frombuffer(image.shot.image.data, dtype=np.uint8)
+            img = cv2.imdecode(img, -1)
+            image_saved_path = image.source.name
+            image_saved_path = image_saved_path.replace(
+                '/', ''
+            )
+            #add a random number to the name of the image to prevent duplicates
+            image_path = image_saved_path + str(np.random.randint(0,10000)) + '.png'
+            cv2.imwrite(image_path, img)
+            
+        print ("Saved image as " + image_path)
+        
+        # Guard clause
+        if not (self.recognizer.ContainsFaces(image_path)):
+            return # return out of the function if we didn't find any faces in the image
+        
+        # Grab the faces in the image, and prep them for analysis.
+        self.recognizer.IdentifyFaces(image_path)
+        
+        # Check to see if any of the faces in the patrol image are people we recognize. If they are, we don't have to bark.
+        if (self.recognizer.RecognizeFaces()):
+            print("We recognize at least one person in the given image, no need to bark")
+        else:
+            # The only people in the image are strangers, time to bark.
+            # TODO bark.
+            # TODO discord message for intruder
+            print("Stranger detected! Woof woof!")
+        
+controller = SpotController()
+controller.patrolRecognize()       
+        
+
+
     
