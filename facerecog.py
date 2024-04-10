@@ -14,7 +14,7 @@ class FaceRecognizer():
     
     def __init__(self, fuzziness=15.0):
         """
-        Create a new FaceRecognizer instance. Fuzziness sets how close a given face must be to another to be considered a match, default is 10.0.
+        Create a new FaceRecognizer instance. Fuzziness sets how close a given face must be to another to be considered a match, default is 15.0.
         """
 
         self.face_cascade_file = 'haarcascade_frontalface_default.xml'
@@ -90,6 +90,10 @@ class FaceRecognizer():
         
         # Return yes/no if we found any faces.
         return i > 0
+    
+    def SetFuzziness(self, value):
+        """Sets the fuziness of the recognizer to the given value. The default value is 15.0"""
+        self.fuzziness = value
 
     def RecognizeFaces(self):
         """
