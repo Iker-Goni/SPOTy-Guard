@@ -12,7 +12,7 @@ from PIL import Image
 
 class FaceRecognizer():
     
-    def __init__(self, fuzziness=10.0):
+    def __init__(self, fuzziness=15.0):
         """
         Create a new FaceRecognizer instance. Fuzziness sets how close a given face must be to another to be considered a match, default is 10.0.
         """
@@ -108,6 +108,8 @@ class FaceRecognizer():
                 source_path = os.path.join(self.newFacesDir, face)
                 dest_path = os.path.join(self.knownFacesDir, face)
                 shutil.move(source_path, dest_path)
+                break
+                #print("moved match to known faces folder")
 
         move_files(self.newFacesDir, self.strangerFacesDir)
         return known_encountered

@@ -149,6 +149,8 @@ class SpotController:
         if not (self.recognizer.ContainsFaces(image_path)):
             return # return out of the function if we didn't find any faces in the image
         
+        print ("Hey, we see somebody!")
+
         # Grab the faces in the image, and prep them for analysis.
         self.recognizer.IdentifyFaces(image_path)
         
@@ -162,6 +164,7 @@ class SpotController:
             print("Stranger detected! Woof woof!")
         
 controller = SpotController()
+#controller.scanNewFace()
 controller.patrolRecognize()       
         
 
