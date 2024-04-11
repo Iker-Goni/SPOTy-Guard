@@ -12,9 +12,9 @@ from PIL import Image
 
 class FaceRecognizer():
     
-    def __init__(self, fuzziness=10.0):
+    def __init__(self, fuzziness=12.0):
         """
-        Create a new FaceRecognizer instance. Fuzziness sets how close a given face must be to another to be considered a match, default is 10.0.
+        Create a new FaceRecognizer instance. Fuzziness sets how close a given face must be to another to be considered a match, default is 15.0.
         """
 
         self.face_cascade_file = 'haarcascade_frontalface_default.xml'
@@ -90,6 +90,10 @@ class FaceRecognizer():
         
         # Return yes/no if we found any faces.
         return i > 0
+    
+    def SetFuzziness(self, value):
+        """Sets the fuziness of the recognizer to the given value. The default value is 15.0"""
+        self.fuzziness = value
 
     def RecognizeFaces(self):
         """
@@ -108,6 +112,7 @@ class FaceRecognizer():
                 source_path = os.path.join(self.newFacesDir, face)
                 dest_path = os.path.join(self.knownFacesDir, face)
                 shutil.move(source_path, dest_path)
+                break
 
         move_files(self.newFacesDir, self.strangerFacesDir)
         return known_encountered
@@ -117,7 +122,6 @@ class FaceRecognizer():
         cursor = self.db.cursor()
         string_rep = "[" + ",".join(str(x) for x in embedding[0].tolist()) + "]"
         cursor.execute("SELECT * FROM pictures WHERE embedding <-> %s <= %s ORDER BY embedding <-> %s LIMIT 5", (string_rep, self.fuzziness, string_rep))
-        #cursor.execute("SELECT * FROM pictures ORDER BY embedding <-> %s LIMIT 5", (string_rep))
         rows = cursor.fetchall()
         return rows
 
@@ -131,17 +135,12 @@ class FaceRecognizer():
         "Helper function that just inserts data into the database."
         cursor = self.db.cursor()
         cursor.execute("INSERT INTO pictures values (%s,%s)", (filename, data[0].tolist()))
+        self.db.commit()
     
     def _printDB(self):
         "Prints out every entry in the database to the console."
-        #TODO: This is broken at the moment, causes crash.
-        print("Printing database is broken, returning to avoid crash.")
-        return
         cursor = self.db.cursor()
-        cursor.execute("SELECT * FROM pictures")
-        rows = cursor.fetchall
-        for row in rows:
-            print(row)
+        cursor.copy_to(sys.stdout, 'pictures', sep='\t')
 
 def move_files(src_folder, dest_folder):
     # Get the list of files in the source folder
