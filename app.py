@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, Response, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, Response, jsonify, request
 import SpotController
 app = Flask(__name__)
 
@@ -69,10 +69,16 @@ def testbark():
     rc.bark()
     return redirect("/")
 
-@app.route("/addface")
-def addface():
-    rc.scanNewFace()
+@app.route("/face-menu")
+def face_menu():
+    return render_template('facereg.html')
+@app.route("/addface", methods=['POST'])
+def addFace():
+    name = request.form.get('name')
+    rc.scanNewFace(person_name=name)
+    flash("Face successfully added!")
     return redirect("/")
+
 if __name__ == '__main__':
     # run flask server
     app.run(debug=True)

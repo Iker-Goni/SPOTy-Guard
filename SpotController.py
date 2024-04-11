@@ -173,8 +173,8 @@ class SpotController:
             print("We recognize at least one person in the given image, no need to bark")
         else:
             # The only people in the image are strangers, time to bark.
-            # TODO bark.
             # TODO discord message for intruder
+            bark()
             print("Stranger detected! Woof woof!")
         
 
