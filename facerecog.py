@@ -137,6 +137,7 @@ class FaceRecognizer():
         "Helper function that just inserts data into the database."
         cursor = self.db.cursor()
         cursor.execute("INSERT INTO pictures values (%s,%s)", (filename, data[0].tolist()))
+        self.db.commit()
     
     def _printDB(self):
         "Prints out every entry in the database to the console."
