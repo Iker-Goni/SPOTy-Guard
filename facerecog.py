@@ -140,14 +140,8 @@ class FaceRecognizer():
     
     def _printDB(self):
         "Prints out every entry in the database to the console."
-        #TODO: This is broken at the moment, causes crash.
-        print("Printing database is broken, returning to avoid crash.")
-        return
         cursor = self.db.cursor()
-        cursor.execute("SELECT * FROM pictures")
-        rows = cursor.fetchall
-        for row in rows:
-            print(row)
+        cursor.copy_to(sys.stdout, 'pictures', sep='\t')
 
 def move_files(src_folder, dest_folder):
     # Get the list of files in the source folder

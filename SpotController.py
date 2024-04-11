@@ -66,14 +66,24 @@ class SpotController:
         bosdyn.client.util.authenticate(self.robot)
 
         self.lease_client = self.robot.ensure_client(bosdyn.client.lease.LeaseClient.default_service_name)
+        self.command_client = self.robot.ensure_client(RobotCommandClient.default_service_name)
         self.robot.time_sync.wait_for_sync()
         self.robot_state_client = self.robot.ensure_client(RobotStateClient.default_service_name)
         self.recognizer = facerecog.FaceRecognizer()
 
-    def setGripperState(self, openState):
+    def setGripperState(self, openState: bool):
         print("things")
         # true = open
         # false = closed
+        gripperAngle: float = 0.0
+        if (openState):
+            gripperAngle = 1.0
+        with bosdyn.client.lease.LeaseKeepAlive(self.lease_client, must_acquire=True, return_at_exit=True):
+            assert self.robot.is_powered_on(), 'failed power on'
+            gripper_command = RobotCommandBuilder.claw_gripper_open_fraction_command(gripperAngle)
+            command = RobotCommandBuilder.build_synchro_command(gripper_command)
+            cmd_id = self.command_client.robot_command(command)
+
     def enablePatrol(self):
         print("things")
         # enable and disable can be the same function, just separating them rn to mirror what the website looks like
@@ -125,6 +135,7 @@ class SpotController:
     def patrolRecognize(self):
         "Takes an image with SPOT's hand cam, sees if it contains faces. If it does, we try to match them to known faces in the database."
         print ("Taking patrol image...")
+        #self.setGripperState(True)
         #TODO: have spot be swiveling the arm back and forth?
         image_client = self.robot.ensure_client(ImageClient.default_service_name)
         image_request = [
@@ -144,7 +155,7 @@ class SpotController:
             cv2.imwrite(image_path, img)
             
         print ("Saved image as " + image_path)
-        
+        #self.setGripperState(False)
         # Guard clause
         if not (self.recognizer.ContainsFaces(image_path)):
             return # return out of the function if we didn't find any faces in the image
@@ -162,6 +173,7 @@ class SpotController:
             # TODO bark.
             # TODO discord message for intruder
             print("Stranger detected! Woof woof!")
+        
         
 controller = SpotController()
 #controller.scanNewFace()
