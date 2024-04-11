@@ -107,7 +107,7 @@ class SpotController:
         arm = self.robot_state_client.get_robot_state().arm_states[0]
         flashlight = arm.flashlight
         flashlight_command = RobotCommandBuilder.synchro_command(robot_command_pb2.ArmFlashlightCommand.Request.ON)
-    def scanNewFace(self):
+    def scanNewFace(self, person_name=""):
         "scans a user's face and adds it to the database."
         print ("Scanning face...")
         #TODO: put the arm up, instruct user to stand infront of spot
@@ -126,7 +126,7 @@ class SpotController:
                 '/', ''
             )
             #add a random number to the name of the image to prevent duplicates
-            image_path = image_saved_path + str(np.random.randint(0,10000)) + '.png'
+            image_path = person_name + image_saved_path + str(np.random.randint(0,10000)) + '.png'
             cv2.imwrite(image_path, img)
             
         print ("Saved image as " + image_path)
@@ -173,11 +173,6 @@ class SpotController:
             # TODO bark.
             # TODO discord message for intruder
             print("Stranger detected! Woof woof!")
-        
-        
-controller = SpotController()
-#controller.scanNewFace()
-controller.patrolRecognize()       
         
 
 
