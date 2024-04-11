@@ -12,7 +12,7 @@ from PIL import Image
 
 class FaceRecognizer():
     
-    def __init__(self, fuzziness=15.0):
+    def __init__(self, fuzziness=12.0):
         """
         Create a new FaceRecognizer instance. Fuzziness sets how close a given face must be to another to be considered a match, default is 15.0.
         """
@@ -113,7 +113,6 @@ class FaceRecognizer():
                 dest_path = os.path.join(self.knownFacesDir, face)
                 shutil.move(source_path, dest_path)
                 break
-                #print("moved match to known faces folder")
 
         move_files(self.newFacesDir, self.strangerFacesDir)
         return known_encountered
@@ -123,7 +122,6 @@ class FaceRecognizer():
         cursor = self.db.cursor()
         string_rep = "[" + ",".join(str(x) for x in embedding[0].tolist()) + "]"
         cursor.execute("SELECT * FROM pictures WHERE embedding <-> %s <= %s ORDER BY embedding <-> %s LIMIT 5", (string_rep, self.fuzziness, string_rep))
-        #cursor.execute("SELECT * FROM pictures ORDER BY embedding <-> %s LIMIT 5", (string_rep))
         rows = cursor.fetchall()
         return rows
 
