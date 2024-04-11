@@ -20,7 +20,12 @@ from bosdyn.client.image import ImageClient, build_image_request
 from bosdyn.api import image_pb2
 from bosdyn.api import robot_command_pb2
 
+# sound functionality
 from playsound import playsound
+# patrol thread imports
+# TODO: fix requirements.txt to add these maybe? not sure
+import threading
+import time
 
 class EstopNoGui():
     """Provides a software estop without a GUI.
@@ -72,6 +77,9 @@ class SpotController:
         self.robot_state_client = self.robot.ensure_client(RobotStateClient.default_service_name)
         self.recognizer = facerecog.FaceRecognizer()
 
+        self._patrolStatus = False
+        self._patrolThread = threading.Thread(target=patrol_loop, name="Patrol Thread")
+
     def setGripperState(self, openState: bool):
         print("things")
         # true = open
@@ -85,13 +93,18 @@ class SpotController:
             command = RobotCommandBuilder.build_synchro_command(gripper_command)
             cmd_id = self.command_client.robot_command(command)
 
-    def enablePatrol(self):
-        print("things")
-        # enable and disable can be the same function, just separating them rn to mirror what the website looks like
-        # do stuff
-    def disablePatrol(self):
-        print("things")
-        # do other stuff
+    def patrol_loop(): # TODO: untested
+        while _patrolStatus == True:
+            patrolRecognize()
+            time.sleep(5)
+
+    def enablePatrol(self): # TODO: untested
+        self._patrolStatus = True
+        self._patrolThread.run()
+    def disablePatrol(self): # TODO: untested
+        self._patrolStatus = False
+        self._patrolThread.join()
+
     def estop(self):
         print("Estopping...")
          # Create estop client for the robot
