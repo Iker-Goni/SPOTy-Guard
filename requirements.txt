@@ -6,7 +6,7 @@ bosdyn-choreography-client
 flask
 # Facial detection
 opencv-python
-psycopg2
+psycopg2-binary
 imgbeddings
 torch
 numpy
