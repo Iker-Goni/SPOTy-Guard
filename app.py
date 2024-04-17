@@ -79,6 +79,12 @@ def addFace():
     flash("Face successfully added!")
     return redirect("/")
 
+@app.route("/recognize")
+def recognize():
+    rc.patrolRecognize()
+    return redirect("/")
+
+
 if __name__ == '__main__':
     # run flask server
     app.run(debug=True)
