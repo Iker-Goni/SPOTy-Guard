@@ -94,54 +94,55 @@ def registering_face(config, time_for_patrol):
         robot_state = robot_state_client.get_robot_state()
         odom_T_flat_body = get_a_tform_b(robot_state.kinematic_state.transforms_snapshot,
                                          ODOM_FRAME_NAME, GRAV_ALIGNED_BODY_FRAME_NAME)
-        
-        # MOVE ARM TO CENTRAL POSITION
-
-        x = 0.75
-        y = 0.0
-        z = .8
-        hand_ewrt_flat_body = geometry_pb2.Vec3(x=x, y=y, z=z)
-
-        # Rotation as a quaternion
-        qw = 1
-        qx = 0
-        qy = 0
-        qz = 0
-        flat_body_Q_hand = geometry_pb2.Quaternion(w=qw, x=qx, y=qy, z=qz)
-
-        flat_body_T_hand = geometry_pb2.SE3Pose(position=hand_ewrt_flat_body,
-                                                rotation=flat_body_Q_hand)
-
-        robot_state = robot_state_client.get_robot_state()
-        odom_T_flat_body = get_a_tform_b(robot_state.kinematic_state.transforms_snapshot,
-                                         ODOM_FRAME_NAME, GRAV_ALIGNED_BODY_FRAME_NAME)
-
-        odom_T_hand = odom_T_flat_body * math_helpers.SE3Pose.from_proto(flat_body_T_hand)
-
-        # duration in seconds
-        seconds = 2
-
-        arm_position_1 = RobotCommandBuilder.arm_pose_command(
-            odom_T_hand.x, odom_T_hand.y, odom_T_hand.z, odom_T_hand.rot.w, odom_T_hand.rot.x,
-            odom_T_hand.rot.y, odom_T_hand.rot.z, ODOM_FRAME_NAME, seconds)
-
-        # Make the open gripper RobotCommand
-        gripper_command = RobotCommandBuilder.claw_gripper_open_fraction_command(1.0)
-
-        # Combine the arm and gripper commands into one RobotCommand
-        arm_command_1 = RobotCommandBuilder.build_synchro_command(gripper_command, arm_position_1)
-
-        # Send the request
-        cmd_id = command_client.robot_command(arm_command_1)
-        robot.logger.info('Moving arm to position 1.')
-
-        # Wait until the arm arrives at the goal.
-        block_until_arm_arrives_with_prints(robot, command_client, cmd_id)
 
         time.sleep(2)
 
         start_time = time.time()
         while time.time() < start_time + time_for_patrol:
+            # MOVE ARM TO CENTRAL POSITION
+
+            x = 0.75
+            y = 0.0
+            z = .8
+            hand_ewrt_flat_body = geometry_pb2.Vec3(x=x, y=y, z=z)
+
+            # Rotation as a quaternion
+            qw = 1
+            qx = 0
+            qy = 0
+            qz = 0
+            flat_body_Q_hand = geometry_pb2.Quaternion(w=qw, x=qx, y=qy, z=qz)
+
+            flat_body_T_hand = geometry_pb2.SE3Pose(position=hand_ewrt_flat_body,
+                                                    rotation=flat_body_Q_hand)
+
+            robot_state = robot_state_client.get_robot_state()
+            odom_T_flat_body = get_a_tform_b(robot_state.kinematic_state.transforms_snapshot,
+                                            ODOM_FRAME_NAME, GRAV_ALIGNED_BODY_FRAME_NAME)
+
+            odom_T_hand = odom_T_flat_body * math_helpers.SE3Pose.from_proto(flat_body_T_hand)
+
+            # duration in seconds
+            seconds = 2
+
+            arm_position_1 = RobotCommandBuilder.arm_pose_command(
+                odom_T_hand.x, odom_T_hand.y, odom_T_hand.z, odom_T_hand.rot.w, odom_T_hand.rot.x,
+                odom_T_hand.rot.y, odom_T_hand.rot.z, ODOM_FRAME_NAME, seconds)
+
+            # Make the open gripper RobotCommand
+            gripper_command = RobotCommandBuilder.claw_gripper_open_fraction_command(1.0)
+
+            # Combine the arm and gripper commands into one RobotCommand
+            arm_command_1 = RobotCommandBuilder.build_synchro_command(gripper_command, arm_position_1)
+
+            # Send the request
+            cmd_id = command_client.robot_command(arm_command_1)
+            robot.logger.info('Moving arm to position 1.')
+
+            # Wait until the arm arrives at the goal.
+            block_until_arm_arrives_with_prints(robot, command_client, cmd_id)
+
+            time.sleep(2)
             # PATROL LEFT TO RIGHT
             # Look to the left and the right with the hand.
             # Robot's frame is X+ forward, Z+ up, so left and right is +/- in Y.
