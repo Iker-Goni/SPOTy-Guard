@@ -49,7 +49,7 @@ def block_until_arm_arrives_with_prints(robot, command_client, cmd_id):
             break
         time.sleep(0.1)
 
-def registering_face(config):
+def registering_face(config, time_for_patrol):
 
     bosdyn.client.util.setup_logging(config.verbose)
 
@@ -140,60 +140,68 @@ def registering_face(config):
 
         time.sleep(2)
 
-        # PATROL LEFT TO RIGHT
-        # Look to the left and the right with the hand.
-        # Robot's frame is X+ forward, Z+ up, so left and right is +/- in Y.
-        x = 3  # look 2 meters ahead
-        start_y = 4
-        end_y = -4
-        z = 0.3  # Look ahead, not up or down
+        start_time = time.time()
+        while time.time() < start_time + time_for_patrol:
+            # PATROL LEFT TO RIGHT
+            # Look to the left and the right with the hand.
+            # Robot's frame is X+ forward, Z+ up, so left and right is +/- in Y.
+            x = 3  # look 2 meters ahead
+            start_y = 4
+            end_y = -4
+            z = 0.3  # Look ahead, not up or down
 
-        traj_time = 6  # take 4 seconds to look from left to right.
+            traj_time = 6  # take 4 seconds to look from left to right.
 
-        start_pos_in_odom_tuple = odom_T_flat_body.transform_point(x=x, y=start_y, z=z)
-        start_pos_in_odom = geometry_pb2.Vec3(x=start_pos_in_odom_tuple[0],
-                                              y=start_pos_in_odom_tuple[1],
-                                              z=start_pos_in_odom_tuple[2])
+            start_pos_in_odom_tuple = odom_T_flat_body.transform_point(x=x, y=start_y, z=z)
+            start_pos_in_odom = geometry_pb2.Vec3(x=start_pos_in_odom_tuple[0],
+                                                y=start_pos_in_odom_tuple[1],
+                                                z=start_pos_in_odom_tuple[2])
 
-        end_pos_in_odom_tuple = odom_T_flat_body.transform_point(x=x, y=end_y, z=z)
-        end_pos_in_odom = geometry_pb2.Vec3(x=end_pos_in_odom_tuple[0], y=end_pos_in_odom_tuple[1],
-                                            z=end_pos_in_odom_tuple[2])
+            end_pos_in_odom_tuple = odom_T_flat_body.transform_point(x=x, y=end_y, z=z)
+            end_pos_in_odom = geometry_pb2.Vec3(x=end_pos_in_odom_tuple[0], y=end_pos_in_odom_tuple[1],
+                                                z=end_pos_in_odom_tuple[2])
 
-        # Create the trajectory points
-        point1 = trajectory_pb2.Vec3TrajectoryPoint(point=start_pos_in_odom)
+            # Create the trajectory points
+            point1 = trajectory_pb2.Vec3TrajectoryPoint(point=start_pos_in_odom)
 
-        duration_seconds = int(traj_time)
-        duration_nanos = int((traj_time - duration_seconds) * 1e9)
+            duration_seconds = int(traj_time)
+            duration_nanos = int((traj_time - duration_seconds) * 1e9)
 
-        point2 = trajectory_pb2.Vec3TrajectoryPoint(
-            point=end_pos_in_odom,
-            time_since_reference=duration_pb2.Duration(seconds=duration_seconds,
-                                                       nanos=duration_nanos))
+            point2 = trajectory_pb2.Vec3TrajectoryPoint(
+                point=end_pos_in_odom,
+                time_since_reference=duration_pb2.Duration(seconds=duration_seconds,
+                                                        nanos=duration_nanos))
 
-        # Build the trajectory proto
-        traj_proto = trajectory_pb2.Vec3Trajectory(points=[point1, point2])
+            # Build the trajectory proto
+            traj_proto = trajectory_pb2.Vec3Trajectory(points=[point1, point2])
 
-        # Build the proto
-        gaze_cmd = arm_command_pb2.GazeCommand.Request(target_trajectory_in_frame1=traj_proto,
-                                                       frame1_name=ODOM_FRAME_NAME,
-                                                       frame2_name=ODOM_FRAME_NAME)
-        arm_command = arm_command_pb2.ArmCommand.Request(arm_gaze_command=gaze_cmd)
-        synchronized_command = synchronized_command_pb2.SynchronizedCommand.Request(
-            arm_command=arm_command)
-        command = robot_command_pb2.RobotCommand(synchronized_command=synchronized_command)
+            # Build the proto
+            gaze_cmd = arm_command_pb2.GazeCommand.Request(target_trajectory_in_frame1=traj_proto,
+                                                        frame1_name=ODOM_FRAME_NAME,
+                                                        frame2_name=ODOM_FRAME_NAME)
+            arm_command = arm_command_pb2.ArmCommand.Request(arm_gaze_command=gaze_cmd)
+            synchronized_command = synchronized_command_pb2.SynchronizedCommand.Request(
+                arm_command=arm_command)
+            command = robot_command_pb2.RobotCommand(synchronized_command=synchronized_command)
 
-        # Make the open gripper RobotCommand
-        gripper_command = RobotCommandBuilder.claw_gripper_open_command()
+            # Make the open gripper RobotCommand
+            gripper_command = RobotCommandBuilder.claw_gripper_open_command()
 
-        # Combine the arm and gripper commands into one RobotCommand
-        synchro_command = RobotCommandBuilder.build_synchro_command(gripper_command, command)
+            # Combine the arm and gripper commands into one RobotCommand
+            synchro_command = RobotCommandBuilder.build_synchro_command(gripper_command, command)
 
-        # Send the request
-        gaze_command_id = command_client.robot_command(command)
-        robot.logger.info('Sending gaze trajectory.')
+            # Send the request
+            gaze_command_id = command_client.robot_command(command)
+            robot.logger.info('Sending gaze trajectory.')
 
-        # Wait until the robot completes the gaze before issuing the next command.
-        block_until_arm_arrives(command_client, gaze_command_id, timeout_sec=traj_time + 3.0)
+            # Wait until the robot completes the gaze before issuing the next command.
+            block_until_arm_arrives(command_client, gaze_command_id, timeout_sec=traj_time + 3.0)
+
+            time.sleep(3)
+
+        robot.logger.info('patrol completed')
+
+        robot.power_off(cut_immediately=False, timeout_sec=20)
 
         
 
