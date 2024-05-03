@@ -1,7 +1,5 @@
 # animation for taking images
 # animation for patrol mode
-# password: sh384s6nnk6q    
-# ip: 192.168.80.3
 import argparse
 import sys
 import time
