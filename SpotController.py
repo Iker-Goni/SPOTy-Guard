@@ -2,7 +2,7 @@ import argparse
 import sys
 import time
 import facerecog
-
+import os
 import cv2
 import numpy as np
 from scipy import ndimage
@@ -87,7 +87,7 @@ class SpotController:
         self.recognizer = facerecog.FaceRecognizer()
 
         self._patrolStatus = False
-        self._patrolThread = threading.Thread(target=patrol_loop, name="Patrol Thread")
+        self._patrolThread = threading.Thread(target=self.patrol_loop, name="Patrol Thread")
 
     def setGripperState(self, openState: bool):
         print("things")
@@ -119,7 +119,7 @@ class SpotController:
         flashlight = arm.flashlight
         flashlight_command = RobotCommandBuilder.synchro_command(robot_command_pb2.ArmFlashlightCommand.Request.ON)
     def bark(self):
-        playsound("sounds/bark.mp3")
+        os.system("ffplay -nodisp -autoexit sounds/bark.mp3")
     def scanNewFace(self, person_name=""):
         "scans a user's face and adds it to the database."
         print ("Scanning face...")
@@ -139,7 +139,7 @@ class SpotController:
                 '/', ''
             )
             #add a random number to the name of the image to prevent duplicates
-            image_path = person_name + image_saved_path + str(np.random.randint(0,10000)) + '.png'
+            image_path = str(person_name) + str(np.random.randint(0,10000)) + '.png'
             cv2.imwrite(image_path, img)
             
         print ("Saved image as " + image_path)
@@ -150,6 +150,68 @@ class SpotController:
         print ("Taking patrol image...")
         #self.setGripperState(True)
         #TODO: have spot be swiveling the arm back and forth?
+        with bosdyn.client.lease.LeaseKeepAlive(self.lease_client, must_acquire=True, return_at_exit=True):
+            self.robot.power_on(timeout_sec=60)
+            #stand
+            blocking_stand(self.command_client, timeout_sec=10)
+
+            #unstow arm
+            unstow = RobotCommandBuilder.arm_ready_command()
+
+            # Issue the command via the RobotCommandClient
+            unstow_command_id = self.command_client.robot_command(unstow)
+            self.robot.logger.info('Unstow command issued.')
+
+            # Convert the location from the moving base frame to the world frame.
+            robot_state = self.robot_state_client.get_robot_state()
+            self.odom_T_flat_body = get_a_tform_b(robot_state.kinematic_state.transforms_snapshot,
+                                             ODOM_FRAME_NAME, GRAV_ALIGNED_BODY_FRAME_NAME)
+            
+            # MOVE ARM TO CENTRAL POSITION
+
+            x = 0.75
+            y = 0.0
+            z = .8
+            hand_ewrt_flat_body = geometry_pb2.Vec3(x=x, y=y, z=z)
+
+            # Rotation as a quaternion
+            qw = 1
+            qx = 0
+            qy = 0
+            qz = 0
+            flat_body_Q_hand = geometry_pb2.Quaternion(w=qw, x=qx, y=qy, z=qz)
+
+            flat_body_T_hand = geometry_pb2.SE3Pose(position=hand_ewrt_flat_body,
+                                                    rotation=flat_body_Q_hand)
+
+            robot_state = self.robot_state_client.get_robot_state()
+            self.odom_T_flat_body = get_a_tform_b(robot_state.kinematic_state.transforms_snapshot,
+                                             ODOM_FRAME_NAME, GRAV_ALIGNED_BODY_FRAME_NAME)
+
+            odom_T_hand = self.odom_T_flat_body * math_helpers.SE3Pose.from_proto(flat_body_T_hand)
+
+            # duration in seconds
+            seconds = 2
+
+            arm_position_1 = RobotCommandBuilder.arm_pose_command(
+                odom_T_hand.x, odom_T_hand.y, odom_T_hand.z, odom_T_hand.rot.w, odom_T_hand.rot.x,
+                odom_T_hand.rot.y, odom_T_hand.rot.z, ODOM_FRAME_NAME, seconds)
+
+            # Make the open gripper RobotCommand
+            gripper_command = RobotCommandBuilder.claw_gripper_open_fraction_command(1.0)
+
+            # Combine the arm and gripper commands into one RobotCommand
+            arm_command_1 = RobotCommandBuilder.build_synchro_command(gripper_command, arm_position_1)
+
+            # Send the request
+            cmd_id = self.command_client.robot_command(arm_command_1)
+            self.robot.logger.info('Moving arm to position 1.')
+
+            # Wait until the arm arrives at the goal.
+            self.block_until_arm_arrives_with_prints(cmd_id)
+
+            time.sleep(2)
+
         image_client = self.robot.ensure_client(ImageClient.default_service_name)
         image_request = [
             build_image_request(image_source_name='hand_color_image', quality_percent=100)
@@ -221,7 +283,7 @@ class SpotController:
                                                 y=start_pos_in_odom_tuple[1],
                                                 z=start_pos_in_odom_tuple[2])
 
-            end_pos_in_odom_tuple = odom_T_flat_body.transform_point(x=x, y=end_y, z=z)
+            end_pos_in_odom_tuple = self.odom_T_flat_body.transform_point(x=x, y=end_y, z=z)
             end_pos_in_odom = geometry_pb2.Vec3(x=end_pos_in_odom_tuple[0], y=end_pos_in_odom_tuple[1],
                                                 z=end_pos_in_odom_tuple[2])
 
@@ -263,9 +325,10 @@ class SpotController:
 
             self.patrolRecognize() # look for people 
 
-    def enablePatrol(self): # TODO: untested
+    def enablePatrol(self): # TODO: untested 
         # back legs should bend down, arm should move up to head level
-        with bosdyn.client.lease.LeaseKeepAlive(self.lease_client, must_acquire=True, return_at_exit=True):           
+        with bosdyn.client.lease.LeaseKeepAlive(self.lease_client, must_acquire=True, return_at_exit=True):
+            self.robot.power_on(timeout_sec=60)
             #stand
             blocking_stand(self.command_client, timeout_sec=10)
 
@@ -326,7 +389,8 @@ class SpotController:
 
             time.sleep(2)
         self._patrolStatus = True
-        self._patrolThread.run()
+        self.patrol_loop()
+        ##self._patrolThread.run()
     def disablePatrol(self): # TODO: untested
         self._patrolStatus = False
         self._patrolThread.join()

@@ -5,7 +5,7 @@ from PIL import Image
 import psycopg2
 import os
 
-db = psycopg2.connect("host='localhost' dbname='testdb' user='nick' password='qwerty'")
+db = psycopg2.connect("host='localhost' dbname='facedb' user='postgres' password=''")
 
 file_name = 'nickface.jpg'
 img = Image.open(file_name)

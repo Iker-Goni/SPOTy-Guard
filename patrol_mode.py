@@ -10,7 +10,7 @@ import bosdyn.client
 import bosdyn.client.lease
 import bosdyn.client.util
 from bosdyn.api import geometry_pb2
-from bosdyn.api.spot import robot_command_pb2 as spot_command_pb2
+from bosdyn.api.spot import robot_command_pb2 
 from bosdyn.client import math_helpers
 from bosdyn.client.frame_helpers import BODY_FRAME_NAME, ODOM_FRAME_NAME, get_a_tform_b
 from bosdyn.client.robot_command import (RobotCommandBuilder, RobotCommandClient,
@@ -143,6 +143,10 @@ def registering_face(config, time_for_patrol):
             block_until_arm_arrives_with_prints(robot, command_client, cmd_id)
 
             time.sleep(2)
+
+            # move to start
+            movetocenter = command_client.robot_command(arm_command_1)
+            block_until_arm_arrives_with_prints(robot, command_client, movetocenter)
             # PATROL LEFT TO RIGHT
             # Look to the left and the right with the hand.
             # Robot's frame is X+ forward, Z+ up, so left and right is +/- in Y.
@@ -212,7 +216,7 @@ def main(argv):
     bosdyn.client.util.add_base_arguments(parser)
     options = parser.parse_args(argv)
     try:
-        registering_face(options)
+        registering_face(options, 120)
         return True
     except Exception as exc:  # pylint: disable=broad-except
         logger = bosdyn.client.util.get_logger()

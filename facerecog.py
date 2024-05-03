@@ -12,14 +12,14 @@ from PIL import Image
 
 class FaceRecognizer():
     
-    def __init__(self, fuzziness=12.0):
+    def __init__(self, fuzziness=18.0):
         """
         Create a new FaceRecognizer instance. Fuzziness sets how close a given face must be to another to be considered a match, default is 15.0.
         """
 
         self.face_cascade_file = 'haarcascade_frontalface_default.xml'
         self.face_cascade = cv2.CascadeClassifier(self.face_cascade_file)
-        self.db = psycopg2.connect("host='localhost' dbname='testdb' user='nick' password='qwerty'") #todo: real db info lmfaooo
+        self.db = psycopg2.connect("host='localhost' dbname='facedb' user='postgres' password=''") #todo: real db info lmfaooo
         self.fuzziness = fuzziness
 
         # directory names.
